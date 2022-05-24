@@ -2,7 +2,7 @@
 
 ## Features
 
-    This scripts will parse Residence plugin config file and separate out all the chunks contains Claimed Residence
+This scripts will parse Residence plugin config file and separate out all the chunks contains Claimed Residence
 
 ## Usage
 
