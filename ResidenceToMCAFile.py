@@ -1,6 +1,3 @@
-from gettext import install
-
-
 import argparse
 import yaml
 import anvil
@@ -12,7 +9,7 @@ def getArgs():
     args.add_argument("--input","-i",type=str,help="The file contains all the servers")
     args.add_argument("--output","-o",type=str,default="ResidenceServers/",required=False,help="The output file")
     args.add_argument("--blackList","-b",type=str,default="Bungeecord",required=False,help="Black list inside the input file")
-    args.add_argument("--restoreWorld","-rs",type=int,default=1,required=False,help="Need to copy the Restore world")
+    args.add_argument("--restoreWorld","-rs",type=int,default=1,required=False,help="Need to copy the Restore world. Set to 0 to skip _rs world")
 
     return args.parse_args()
 
