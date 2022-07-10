@@ -1,3 +1,2 @@
 argparse
 pyyaml
-git+https://github.com/jimlin91/anvil_parser.git@master

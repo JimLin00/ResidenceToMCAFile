@@ -1,7 +1,9 @@
 import argparse
+import imp
 import yaml
-import anvil
+
 from pathlib import Path
+from Anvil_Parser import *
 
 def getArgs():
     args = argparse.ArgumentParser("ResidenceToMCAFile.py",description="Read the chunks containing Residence and seperate it out")
@@ -15,7 +17,6 @@ def getArgs():
 
 def getChunkList(worldResidence):
     areas = []
-
     with open(str(worldResidence).replace("_rs",""),'r') as f:
         data = yaml.load(f,yaml.CLoader)
 
@@ -23,10 +24,10 @@ def getChunkList(worldResidence):
 
             area = data["Residences"][key]["Areas"]["main"].split(":")
             
-            xmin = int(area[0])>>4
-            zmin = int (area[2])>>4
-            xmax = int(area[3])>>4
-            zmax = int(area[5])>>4
+            xmin = min(int(area[0]),int(area[3]))>>4
+            zmin = min(int(area[2]),int(area[5]))>>4
+            xmax = max(int(area[0]),int(area[3]))>>4
+            zmax = max(int(area[2]),int(area[5]))>>4
            
             for i in range(xmax-xmin+1):
                 for j in range(zmax-zmin+1):
@@ -104,21 +105,19 @@ def main():
 
                 splitMcaName = mcaName.split(".")
                 
-                originalRegion = anvil.Region.from_file(str(regionFile))
-                newRegion = anvil.EmptyRegion(int(splitMcaName[0]),int(splitMcaName[1]))
+                originalRegion = Region(str(regionFile))
+                newRegion = EmptyRegion()
                 print("MCA:{} WorldName:{}/{}".format(mcaName,dirFile.name,stripName),end="\r")
 
                 for strChunk in mcaMap[mcaName]:
                     splitStrChunk = strChunk.split(":")
 
+                    chunk = originalRegion.getChunk(int(splitStrChunk[0]),int(splitStrChunk[1]))
                     
-                    try:
-                        chunk = anvil.Chunk.from_region(originalRegion,int(splitStrChunk[0]),int(splitStrChunk[1]))
-                    except anvil.errors.ChunkNotFound:
-                        print("MCA:{} WorldName:{}/{} Chunk at ({},{}) not found".format(mcaName,dirFile.name,stripName,int(splitStrChunk[0]),int(splitStrChunk[1])))
+                    if(chunk == None):
                         continue
 
-                    newRegion.add_chunk(chunk)
+                    newRegion.append(chunk)
                 
                 newPath = args.output+"/"+dirFile.name+"/"+stripName+"/region"
                 outputPath = Path(newPath)
