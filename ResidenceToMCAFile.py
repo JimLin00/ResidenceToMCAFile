@@ -55,6 +55,39 @@ def sortChunks(chunks):
     
     return mcaMap
 
+def saveSeperateChunks(targetServer:Path,targetWorldName:str,targetMcaDir:str,mcaName:str,mcaDic:dict,outPutBaseDir:str):
+    regionFile = targetServer/targetWorldName/targetMcaDir/"r.{}.mca".format(mcaName)
+
+    if targetWorldName.startswith("world_nether"):
+        regionFile = targetServer/targetWorldName/"DIM-1"/targetMcaDir/"r.{}.mca".format(mcaName)
+    elif targetWorldName.startswith("world_the_end"):
+        regionFile = targetServer/targetWorldName/"DIM1"/targetMcaDir/"r.{}.mca".format(mcaName)
+                
+                
+                    
+    if not regionFile.exists():
+        print(regionFile,"path not exists!")
+        return
+    
+    originalRegion = Region(str(regionFile))
+    newRegion = EmptyRegion()
+    print("MCA:{} WorldName:{}/{}   ".format(mcaName,targetServer.name,targetWorldName),end="\r")
+
+    for strChunk in mcaDic[mcaName]:
+        splitStrChunk = strChunk.split(":")
+
+        chunk = originalRegion.getChunk(int(splitStrChunk[0]),int(splitStrChunk[1]))
+        
+        if(chunk == None):
+            continue
+
+        newRegion.append(chunk)
+    
+    newPath = outPutBaseDir+"/"+targetServer.name+"/"+targetWorldName+"/"+targetMcaDir
+    outputPath = Path(newPath)
+    outputPath.mkdir(parents=True,exist_ok=True)
+    newRegion.save(newPath+"/r.{}.mca".format(mcaName))
+
 def main():
     args = getArgs()
     #inputPath = Path("Servers/")
@@ -89,43 +122,8 @@ def main():
             
 
             for mcaName in mcaMap.keys():
-
-                regionFile = dirFile/stripName/"region"/"r.{}.mca".format(mcaName)
-
-                if stripName.startswith("world_nether"):
-                    regionFile = dirFile/stripName/"DIM-1/region"/"r.{}.mca".format(mcaName)
-                elif stripName.startswith("world_the_end"):
-                    regionFile = dirFile/stripName/"DIM1/region"/"r.{}.mca".format(mcaName)
-                
-                
-                    
-                if not regionFile.exists():
-                    print(regionFile,"path not exists!")
-                    continue
-
-                splitMcaName = mcaName.split(".")
-                
-                originalRegion = Region(str(regionFile))
-                newRegion = EmptyRegion()
-                print("MCA:{} WorldName:{}/{}".format(mcaName,dirFile.name,stripName),end="\r")
-
-                for strChunk in mcaMap[mcaName]:
-                    splitStrChunk = strChunk.split(":")
-
-                    chunk = originalRegion.getChunk(int(splitStrChunk[0]),int(splitStrChunk[1]))
-                    
-                    if(chunk == None):
-                        continue
-
-                    newRegion.append(chunk)
-                
-                newPath = args.output+"/"+dirFile.name+"/"+stripName+"/region"
-                outputPath = Path(newPath)
-                outputPath.mkdir(parents=True,exist_ok=True)
-                newRegion.save(newPath+"/r.{}.mca".format(mcaName))
-
-
-
-
-            
+                saveSeperateChunks(dirFile,stripName,"region",mcaName,mcaMap,args.output)
+                saveSeperateChunks(dirFile,stripName,"poi",mcaName,mcaMap,args.output)
+                saveSeperateChunks(dirFile,stripName,"entities",mcaName,mcaMap,args.output)
+                     
 main()
