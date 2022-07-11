@@ -29,3 +29,6 @@ class Region:
         chunkData = self.inFile[contentPos[0]*4096:contentPos[0]*4096+contentPos[1]*4096]
 
         return Chunk(chunkData,contentPos[1])
+    
+    def isVailableFile(self)->bool:
+        return len(self.inFile)>=8192

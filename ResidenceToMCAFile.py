@@ -70,8 +70,15 @@ def saveSeperateChunks(targetServer:Path,targetWorldName:str,targetMcaDir:str,mc
         return
     
     originalRegion = Region(str(regionFile))
+    
+    if( not originalRegion.isVailableFile()):
+        print("\n"+targetMcaDir+"/r.{}.mca".format(mcaName)," Is not a vailable region file.")
+        return
+
     newRegion = EmptyRegion()
     print("MCA:{} WorldName:{}/{}   ".format(mcaName,targetServer.name,targetWorldName),end="\r")
+
+    isEmpty = True
 
     for strChunk in mcaDic[mcaName]:
         splitStrChunk = strChunk.split(":")
@@ -80,9 +87,13 @@ def saveSeperateChunks(targetServer:Path,targetWorldName:str,targetMcaDir:str,mc
         
         if(chunk == None):
             continue
-
-        newRegion.append(chunk)
+        
+        isEmpty = False
+        newRegion.append(int(splitStrChunk[0]),int(splitStrChunk[1]),chunk)
     
+    if(isEmpty):
+        return
+
     newPath = outPutBaseDir+"/"+targetServer.name+"/"+targetWorldName+"/"+targetMcaDir
     outputPath = Path(newPath)
     outputPath.mkdir(parents=True,exist_ok=True)
@@ -123,7 +134,7 @@ def main():
 
             for mcaName in mcaMap.keys():
                 saveSeperateChunks(dirFile,stripName,"region",mcaName,mcaMap,args.output)
-                saveSeperateChunks(dirFile,stripName,"poi",mcaName,mcaMap,args.output)
                 saveSeperateChunks(dirFile,stripName,"entities",mcaName,mcaMap,args.output)
+                saveSeperateChunks(dirFile,stripName,"poi",mcaName,mcaMap,args.output)
                      
 main()
