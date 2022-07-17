@@ -1,5 +1,6 @@
 import argparse
 import imp
+import re
 import yaml
 
 from pathlib import Path
@@ -15,14 +16,41 @@ def getArgs():
 
     return args.parse_args()
 
+def getSumArea(areaConfig:dict)->list:
+    if(len(areaConfig.keys()) == 1):
+        return areaConfig[list(areaConfig.keys())[0]].split(":")
+    
+    mainArea = []
+    for key in areaConfig.keys():
+        area = areaConfig[key].split(":")
+
+        if len(mainArea) == 0:
+            for i in range(6):
+                if i<3:
+                    mainArea.append(min(int(area[i]),int(area[i+3])))
+                else:
+                    mainArea.append(max(int(area[i]),int(area[i-3])))
+            continue
+
+        for i in range(6):
+            if(i < 3):
+                mainArea[i] = min(mainArea[i],int(area[i]),int(area[i+3]))
+            else:
+                mainArea[i] = max(mainArea[i],int(area[i]),int(area[i-3]))
+    
+    return mainArea
+
+
 def getChunkList(worldResidence):
+    print("ResidenceFile:",worldResidence)
+
     areas = []
     with open(str(worldResidence).replace("_rs",""),'r') as f:
         data = yaml.load(f,yaml.CLoader)
-
+        
         for key in data["Residences"].keys():
-
-            area = data["Residences"][key]["Areas"]["main"].split(":")
+            
+            area = getSumArea(data["Residences"][key]["Areas"])
             
             xmin = min(int(area[0]),int(area[3]))>>4
             zmin = min(int(area[2]),int(area[5]))>>4
